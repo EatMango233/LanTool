@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#6750A4" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="description" content="局域网 P2P 多功能工具：免登录、免服务器，一次配对永久信任" />
+  <title>局域网工具 LanTool</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" href="./icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <link rel="stylesheet" href="./style/main.css" />
+  <link rel="preconnect" href="https://unpkg.com" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- MD3 图标：Material Symbols Rounded（图标字体，用于替代 emoji） -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script type="importmap">
+    {
+      "imports": {
+        "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js",
+        "varlet": "https://unpkg.com/@varlet/ui/es/varlet.esm.js"
+      }
+    }
+  </script>
+  <!-- 扫码配对：qrcodejs（二维码生成，全局 QRCode）+ jsQR（二维码解码，全局 jsQR） -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
+</head>
+<body>
+  <div id="app" v-cloak></div>
+
+  <!-- ================= Vue 渲染模板 ================= -->
+  <script type="text/x-template" id="app-tpl">
+    <div class="app">
+      <!-- 1. 顶部栏：主题切换 | 项目名称 | 本机名称 -->
+      <header class="app-header">
+        <button class="icon-btn" @click="cycleTheme" :title="'主题：' + theme">
+          <span class="theme-ico msi">{{ theme === 'dark' ? 'dark_mode' : theme === 'light' ? 'light_mode' : 'brightness_auto' }}</span>
+        </button>
+        <h1 class="brand">LanTool</h1>
+        <button class="name-btn" @click="renameMe" title="点击修改本机名称">{{ myName }}</button>
+      </header>
+
+      <!-- 2. 身份区：本机身份 | 配对入口 | 中继状态 -->
+      <section class="card token-card">
+        <div class="identity-row">
+          <div class="identity-main">
+            <span class="badge badge-ok">本机身份</span>
+            <span class="my-perm">{{ myName }} · {{ myPerm.slice(0, 8) }}</span>
+          </div>
+          <button class="icon-btn" @click="renameMe" title="修改本机名称"><span class="msi">edit</span></button>
+        </div>
+        <div class="lan-ip" v-if="lanIPs.length">局域网 IP：{{ lanIPs.join(' / ') }}</div>
+        <div class="lan-ip">当前地址：{{ originText }}</div>
+        <div class="pair-actions">
+          <button class="btn primary manual-pair-btn" @click="openManualPair('pair')">扫码 / 手动配对</button>
+        </div>
+        <!-- 公网中继状态（LocalSend 服务器）：跨设备自动发现 -->
+        <div class="relay-row">
+          <span class="dot" :class="relayDotOn ? 'dot-on' : ''"></span>
+          <span>公网中继：{{ relayLabel }}</span>
+          <button v-if="relayStatus === 'down'" class="mini-btn" @click="relayNow" title="重新连接中继"><span class="msi">refresh</span></button>
+        </div>
+      </section>
+
+      <!-- 3. 设备列表 -->
+      <section class="card devices-card">
+        <div class="card-head">
+          <h2>已配对设备</h2>
+          <button class="btn md2" @click="probeNow" :disabled="detecting">
+            {{ detecting ? '检测中…' : '刷新在线状态' }}
+          </button>
+        </div>
+        <div v-if="!devices.length" class="empty">
+          <p>还没有配对设备</p>
+          <p class="sub">点击上方"扫码 / 手动配对"或等待自动发现</p>
+        </div>
+        <ul class="device-list">
+          <li
+            v-for="dev in devices"
+            :key="dev.permanentId"
+            class="device-card"
+            :class="{ active: curPerm === dev.permanentId }"
+            @click="selectDevice(dev)"
+            @touchstart="pressStart(dev)"
+            @touchend="pressEnd"
+            @mousedown="pressStart(dev)"
+            @mouseup="pressEnd"
+            @mouseleave="pressEnd"
+          >
+            <div class="dot" :class="dev.online ? 'dot-on' : ''"></div>
+            <div class="dev-info">
+              <span class="dev-name">{{ dev.display }}<span v-if="unread[dev.permanentId]" class="unread-badge">{{ unread[dev.permanentId] }}</span></span>
+              <span class="dev-sub">
+                {{ dev.online ? '在线' : '离线' }}
+                <template v-if="dev.status === 'connected'"> · 已连接</template>
+              </span>
+            </div>
+            <div class="dev-tags">
+              <span class="tag" :class="dev.connectionTrusted ? 'tag-on' : ''">连接</span>
+              <span class="tag" :class="dev.operationTrusted ? 'tag-on' : ''">操作</span>
+              <span v-if="dev.status === 'connected'" class="rtt">{{ rttMap[dev.permanentId] || '—' }}ms</span>
+            </div>
+            <button class="mini-btn" @click.stop="removeDevice(dev)" title="删除设备"><span class="msi">close</span></button>
+            <button v-if="!dev.online" class="mini-btn" @click.stop="openManualPair('reconnect', dev)" title="重新连接"><span class="msi">refresh</span></button>
+          </li>
+        </ul>
+        <p class="hint" v-if="devices.length">长按设备卡可编辑别名（将双向同步）</p>
+        <!-- 公网中继发现的新设备（尚未配对） -->
+        <template v-if="discovered.length">
+          <div class="card-head sub-head">
+            <h2>发现的新设备</h2>
+            <span class="hint inline">同局域网 · 自动发现</span>
+          </div>
+          <ul class="device-list">
+            <li v-for="dev in discovered" :key="'d' + dev.perm" class="device-card discovered-card">
+              <div class="dot"></div>
+              <div class="dev-info">
+                <span class="dev-name">{{ dev.name || dev.perm.slice(0, 8) }}</span>
+                <span class="dev-sub">尚未配对 · 点击配对建立信任</span>
+              </div>
+              <button class="btn md2" @click.stop="pairDiscovered(dev)">配对</button>
+            </li>
+          </ul>
+        </template>
+      </section>
+
+      <!-- 4. 会话区 -->
+      <section class="card session-card" v-if="curPerm">
+        <div class="session-head">
+          <h2>与 {{ curName }} 的会话</h2>
+          <div class="session-ops">
+            <button class="btn md2" @click="openIframeDlg">推网页</button>
+            <button class="btn md2" @click="toggleVoice">{{ voiceLabel() }}</button>
+            <button class="btn md2" @click="syncClipboard">剪贴板 →</button>
+            <button class="btn md2" @click="ghostSync" title="幽灵应急同步">幽灵</button>
+          </div>
+        </div>
+      </section>
+      <p v-else class="hint">点击设备开始会话</p>
+
+      <!-- 5. 聊天窗口 -->
+      <section v-if="curPerm" class="card chat-card">
+        <div class="chatbox" ref="chatbox">
+          <template v-for="m in messages" :key="m.id || m.timestamp + m.direction">
+            <div class="msg" :class="m.direction === 'send' ? 'msg-send' : 'msg-recv'">
+              <div class="msg-bubble" :class="'msg-' + m.type">
+                <template v-if="m.type === 'text'">{{ m.content }}</template>
+                <template v-else-if="m.type === 'image'">
+                  <img class="msg-img" :src="m.content" alt="图片" @click.stop="zoomImage(m.content)" />
+                  <div class="msg-file-meta">{{ m.extra ? m.extra.name : '图片' }}</div>
+                </template>
+                <template v-else-if="m.type === 'audio'">
+                  <audio class="msg-audio" :src="m.content" controls preload="none"></audio>
+                  <div class="msg-file-meta">{{ m.extra ? m.extra.name : '语音' }}</div>
+                </template>
+                <template v-else-if="m.type === 'file'"><span class="msi msi-sm">attach_file</span> {{ m.content }}</template>
+                <template v-else-if="m.type === 'clipboard'"><span class="msi msi-sm">content_paste</span> {{ m.content }}</template>
+                <template v-else>{{ m.content }}</template>
+              </div>
+              <span class="msg-time">{{ chatTime(m.timestamp) }}</span>
+            </div>
+          </template>
+          <!-- 传输进度 -->
+          <div v-for="(p, perm) in progress" :key="'p' + perm" class="msg msg-recv">
+            <div class="msg-bubble">
+              <div class="progress-row" v-if="p">
+                {{ p.direction === 'out' ? '发送' : '接收' }} {{ p.name }}
+                <div class="bar"><i :style="{ width: barPct(p) + '%' }"></i></div>
+                <span>{{ p.got }} / {{ p.total }} 片 (64KB)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p v-if="busyLabel" class="hint">{{ busyLabel }}</p>
+      </section>
+
+      <!-- 6. 底部输入 -->
+      <section v-if="curPerm" class="card input-card">
+        <textarea
+          v-model="draft"
+          class="chat-input"
+          placeholder="输入消息，Enter 发送，Shift+Enter 换行"
+          rows="2"
+          @keydown="onKeydown"
+          @focus="scrollInputIntoView"
+        ></textarea>
+        <button
+          v-if="recState === 'idle'"
+          class="btn md2 voice-rec-btn"
+          @click="startVoiceRec"
+          title="按住发送语音消息（录音）"
+        ><span class="msi">mic</span></button>
+        <button
+          v-else
+          class="btn md2 voice-rec-btn rec-on"
+          @click="stopVoiceRec"
+          title="停止录音并发送"
+        ><span class="msi">stop</span> {{ recTimeLabel() }}</button>
+        <button class="btn md2 send-btn" @click="sendChat" :disabled="!draft.trim()">发送</button>
+      </section>
+
+      <!-- 7. 底部导航（MD3 Bottom App Bar） -->
+      <nav class="action-bar">
+        <button class="action-btn" @click="navAct('file')" :disabled="!curPerm">
+          <span class="act-ico msi">upload_file</span><span>传文件</span>
+        </button>
+        <button class="action-btn" @click="navAct('transfers')">
+          <span class="act-ico msi">swap_vert</span><span>传输</span>
+          <span v-if="queueActiveCount" class="nav-badge">{{ queueActiveCount }}</span>
+        </button>
+        <button class="action-btn" @click="navAct('voice')" :disabled="!curPerm">
+          <span class="act-ico msi">call</span><span>语音</span>
+        </button>
+        <button class="action-btn" @click="navAct('history')">
+          <span class="act-ico msi">history</span><span>历史</span>
+        </button>
+        <button class="action-btn" @click="navAct('settings')">
+          <span class="act-ico msi">settings</span><span>设置</span>
+        </button>
+        <input type="file" ref="fileInput" multiple style="display:none" @change="onFilePicked" />
+      </nav>
+
+      <!-- 8. 状态栏 -->
+      <footer class="status-bar">
+        <span class="dot" :class="curPerm && isOnline(curPerm) ? '' : ''"></span>
+        <span>{{ statusText || (curPerm ? (isOnline(curPerm) ? '连接状态：在线' : '连接状态：未连接') : '未选择设备') }}</span>
+        <span class="sp"></span>
+        <span title="本机永久 ID">{{ myPerm.slice(0, 8) }}</span>
+        <span title="运行版本">{{ ver }}</span>
+      </footer>
+    </div>
+
+    <!-- ================= 配对确认弹窗 ================= -->
+    <transition name="dialog">
+      <div v-if="pairingShow" class="overlay" @click.self="pairingClose">
+        <div class="dialog">
+          <h3>配对请求</h3>
+          <p>
+            设备 <b>{{ pairInfo && pairInfo.name }}</b> 请求配对{{ pairInfo && pairInfo.via === 'relay' ? '（经公网中继发现）' : '' }}，是否接受？
+          </p>
+          <div class="dlg-actions">
+            <button class="btn" @click="pairingClose">拒绝</button>
+            <button class="btn primary" @click="acceptPair">接受</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- 手动配对弹窗（复制粘贴信令，跨设备） -->
+    <transition name="dialog">
+      <div v-if="manualShow" class="overlay" @click.self="manualClose">
+        <div class="dialog wide-dialog">
+          <h3>{{ manualMode === 'reconnect' ? '重新连接' : '手动配对' }}</h3>
+          <p class="sub" v-if="manualMode === 'reconnect'">
+            重新连接 <b>{{ manualTarget && manualTarget.display }}</b>：生成重连码发给对方，对方粘贴处理并回复应答码。
+          </p>
+          <p class="sub" v-else>生成配对码后，让对方扫码打开链接即可自动应答；也可复制配对码通过微信/短信发送。</p>
+
+          <!-- 第一步：生成我的配对码（无临时令牌，扫码或复制给对方） -->
+          <div class="manual-step">
+            <label class="manual-label">{{ manualMode === 'reconnect' ? '1. 生成重连码' : '1. 生成配对码' }}</label>
+            <textarea class="manual-code" v-model="manualCodeOut" readonly rows="4" placeholder="此处显示生成的配对码"></textarea>
+            <button class="btn primary" :disabled="manualBusy" @click="genManualOffer">
+              {{ manualBusy ? '生成中…' : manualMode === 'reconnect' ? '生成重连码' : '生成配对码' }}
+            </button>
+            <button class="btn md2" :disabled="!manualCodeOut" @click="copyManualCode">复制</button>
+            <button class="btn md2" :disabled="!manualCodeOut" @click="copyManualLink" title="对方点开链接自动处理配对码">复制链接</button>
+            <div class="qr-box" v-if="manualCodeOut" ref="qrOut"></div>
+            <button class="btn md2" :disabled="!manualCodeOut" @click="openQrScan" title="扫描对方屏幕上的二维码">扫码</button>
+          </div>
+
+          <!-- 第二步：粘贴对方发回的配对码并处理 -->
+          <div class="manual-step">
+            <label class="manual-label">2. 粘贴对方发来的配对码</label>
+            <textarea class="manual-code" v-model="manualCodeIn" rows="4" placeholder="粘贴对方发来的配对码"></textarea>
+            <button class="btn primary" :disabled="manualBusy || !manualCodeIn" @click="processManualCode">
+              {{ manualBusy ? '处理中…' : '处理配对码' }}
+            </button>
+          </div>
+
+          <div class="dlg-actions">
+            <button class="btn" @click="manualClose">关闭</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- 扫码弹窗（A 端摄像头回传应答码） -->
+    <transition name="dialog">
+      <div v-if="qrScanShow" class="overlay" @click.self="closeQrScan">
+        <div class="dialog scan-dialog">
+          <h3>扫描对方二维码</h3>
+          <p class="sub">将摄像头对准对方屏幕上的二维码</p>
+          <video ref="qrVideo" class="qr-video" playsinline muted></video>
+          <canvas ref="qrCanvas" class="qr-canvas"></canvas>
+          <div class="dlg-actions">
+            <button class="btn" @click="closeQrScan">取消</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- 操作授权弹窗（文件） -->
+    <transition name="dialog">
+      <div v-if="showFileAuth && fileAuthInfo" class="overlay" @click.self="refuseFile">
+        <div class="dialog">
+          <h3>文件传输请求</h3>
+          <p>{{ fileAuthInfo.name }} ({{ fmtSize(fileAuthInfo.size) }})</p>
+          <p class="sub">允许该设备向你发送文件？</p>
+          <div class="dlg-actions">
+            <button class="btn" @click="refuseFile">拒绝</button>
+            <button class="btn" @click="allowFileOnce">允许本次</button>
+            <button class="btn primary" @click="alwaysAllowFile">总是允许</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- ================= 网页推送授权弹窗 ================= -->
+    <transition name="dialog">
+      <div v-if="showIframeAuth && iframeAuthInfo" class="overlay" @click.self="refuseIframe">
+        <div class="dialog">
+          <h3>网页推送请求</h3>
+          <p>对方希望你在本机打开网页：</p>
+          <p class="url">{{ iframeAuthInfo.url }}</p>
+          <div class="dlg-actions">
+            <button class="btn" @click="refuseIframe">拒绝</button>
+            <button class="btn" @click="allowIframeOnce">允许本次</button>
+            <button class="btn primary" @click="alwaysAllowIframe">总是允许</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- ================= 语音来电弹窗 ================= -->
+    <transition name="dialog">
+      <div v-if="showVoice && voiceInfo" class="overlay" @click.self="rejectVoice">
+        <div class="dialog">
+          <h3>语音通话</h3>
+          <p>设备 <b>{{ voiceInfo.name || '未知设备' }}</b> 请求语音通话（仅音频）</p>
+          <div class="dlg-actions">
+            <button class="btn" @click="rejectVoice">拒绝</button>
+            <button class="btn primary" @click="acceptVoice">接听</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- ================= 别名编辑弹窗（长按设备卡） ================= -->
+    <transition name="dialog">
+      <div v-if="showAlias && aliasTarget" class="overlay" @click.self="showAlias = false">
+        <div class="dialog">
+          <h3>编辑别名</h3>
+          <input class="pair-input" v-model="aliasInput" placeholder="给对方起一个别名" maxlength="20" />
+          <label class="chk">
+            <input type="checkbox" v-model="aliasShow" /> 显示原名
+          </label>
+          <div class="dlg-actions">
+            <button class="btn" @click="showAlias = false">取消</button>
+            <button class="btn primary" @click="saveAlias">保存并同步</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- ================= 本机名编辑弹窗 ================= -->
+    <transition name="dialog">
+      <div v-if="showRename" class="overlay" @click.self="showRename = false">
+        <div class="dialog">
+          <h3>修改本机名称</h3>
+          <input class="pair-input" v-model="renameInput" maxlength="20" />
+          <div class="dlg-actions">
+            <button class="btn" @click="showRename = false">取消</button>
+            <button class="btn primary" @click="saveName">保存</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- ================= 推网页输入弹窗 ================= -->
+    <transition name="dialog">
+      <div v-if="iframeDlg" class="overlay" @click.self="iframeDlg = false">
+        <div class="dialog">
+          <h3>推送网页到 {{ curName }} </h3>
+          <input class="pair-input" v-model="iframeDraft" placeholder="例如 example.com 或 https://…" @keydown.enter="submitIframe" />
+          <div class="dlg-actions">
+            <button class="btn" @click="iframeDlg = false">取消</button>
+            <button class="btn primary" @click="submitIframe">推送</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- ================= 历史记录面板 ================= -->
+    <transition name="dialog">
+      <div v-if="showHistory" class="overlay" @click.self="showHistory = false">
+      <div class="dialog wide">
+        <h3>传输与操作历史</h3>
+        <ul class="hist-list">
+          <li v-for="h in historyList" :key="h.id">
+            <span class="tag" :class="h.status === 'success' ? 'tag-on' : 'tag-warn'">{{ h.status === 'success' ? '成功' : '失败' }}</span>
+            {{ h.action === 'file_transfer' ? '文件' : h.action === 'iframe_push' ? '网页' : '剪贴板' }}
+            · {{ snip(h.detail) }}
+            <span class="msg-time">{{ fmtTime(h.timestamp) }}</span>
+          </li>
+        </ul>
+        <p v-if="!historyList.length" class="empty">暂无记录</p>
+        <div class="dlg-actions">
+          <button class="btn primary" @click="showHistory = false">关闭</button>
+        </div>
+      </div>
+      </div>
+    </transition>
+
+    <!-- ================= iframe 网页视图 ================= -->
+    <transition name="dialog">
+      <div v-if="showIframeView" class="overlay iframe-overlay" @click.self="showIframeView = false">
+        <div class="iframe-frame">
+          <div class="iframe-bar">
+            <span class="url">{{ iframeUrl }}</span>
+            <button class="btn md2" @click="openIframeNewTab" title="若页面过重或加载失败，可改用系统浏览器打开">
+              <span class="msi msi-sm">open_in_new</span> 新窗口打开
+            </button>
+            <button class="mini-btn" @click="showIframeView = false" title="关闭"><span class="msi">close</span></button>
+          </div>
+          <iframe :src="iframeUrl" class="iframe-body" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+        </div>
+      </div>
+    </transition>
+
+    <!-- ================= 设置面板 ================= -->
+    <transition name="dialog">
+      <div v-if="showSettings" class="overlay" @click.self="showSettings = false">
+        <div class="dialog wide">
+          <h3>设置</h3>
+          <div class="setting-group">
+            <span class="setting-label">主题</span>
+            <div class="setting-row">
+              <button class="btn md2" :class="settingsTheme === 'system' ? 'primary' : ''" @click="setSettingsTheme('system')">跟随系统</button>
+              <button class="btn md2" :class="settingsTheme === 'light' ? 'primary' : ''" @click="setSettingsTheme('light')">浅色</button>
+              <button class="btn md2" :class="settingsTheme === 'dark' ? 'primary' : ''" @click="setSettingsTheme('dark')">深色</button>
+            </div>
+          </div>
+          <div class="setting-group">
+            <span class="setting-label">系统通知</span>
+            <div class="setting-row">
+              <button class="btn md2" @click="requestNotifyPermission">申请通知权限</button>
+            </div>
+          </div>
+          <label class="chk setting-group">
+            <input type="checkbox" v-model="settingsAutoAccept" @change="toggleAutoAccept" /> 信任设备自动接受连接
+          </label>
+          <label class="chk setting-group">
+            <input type="checkbox" v-model="settingsRelay" @change="toggleRelaySetting" /> 公网中继（跨设备自动发现）
+          </label>
+          <div class="setting-group">
+            <span class="setting-label">数据</span>
+            <div class="setting-row">
+              <button class="btn md2" @click="clearConversationData">清空当前会话</button>
+              <button class="btn md2" @click="clearTrustData">清空信任列表</button>
+              <button class="btn md2" @click="clearAllData">清空全部数据</button>
+            </div>
+          </div>
+          <div class="setting-group">
+            <span class="setting-label">关于</span>
+            <div class="setting-row">
+              <span class="hint inline">LanTool · 局域网 P2P 工具 · v{{ ver }}</span>
+            </div>
+          </div>
+          <div class="dlg-actions">
+            <button class="btn primary" @click="showSettings = false">关闭</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- ================= 传输队列 ================= -->
+    <transition name="dialog">
+      <div v-if="transferShow" class="overlay" @click.self="transferShow = false">
+        <div class="dialog wide">
+          <h3>传输队列</h3>
+          <div class="qlist" v-if="queueSend.length || queueRecv.length || queueDone.length">
+            <div v-for="item in queueSend" :key="'s' + item.fid" class="qitem">
+              <div class="qhead">
+                <span class="qname">{{ item.name }}</span>
+                <span class="tag" :class="item.state === 'sending' ? 'tag-on' : ''">{{ qStateLabel(item.state) }}</span>
+                <button class="mini-btn" @click="cancelFile(item.fid)" title="取消"><span class="msi">close</span></button>
+              </div>
+              <div class="bar"><i :style="{ width: qBarPct(item) + '%' }"></i></div>
+              <div class="qsub">发送 · {{ item.got }} / {{ item.chunks }} 片 · 64KB</div>
+            </div>
+            <div v-for="item in queueRecv" :key="'r' + item.fid" class="qitem">
+              <div class="qhead">
+                <span class="qname">{{ item.name }}</span>
+                <span class="tag" :class="item.state === 'receiving' ? 'tag-on' : ''">{{ qStateLabel(item.state) }}</span>
+              </div>
+              <div class="bar"><i :style="{ width: qBarPct(item) + '%' }"></i></div>
+              <div class="qsub">接收 · {{ item.got }} / {{ item.chunks }} 片 · 64KB</div>
+            </div>
+            <div v-for="item in queueDone" :key="'d' + item.fid" class="qitem" :class="item.state === 'failed' ? 'qitem-fail' : ''">
+              <div class="qhead">
+                <span class="qname">{{ item.name }}</span>
+                <span class="tag" :class="item.state === 'done' ? 'tag-on' : 'tag-warn'">{{ qStateLabel(item.state) }}</span>
+                <button v-if="item.state === 'failed'" class="mini-btn" @click="retryFile(item.fid)" title="重试"><span class="msi">refresh</span></button>
+              </div>
+              <div class="qsub">{{ item.reason || (item.state === 'done' ? '传输完成' : '传输失败') }}</div>
+            </div>
+          </div>
+          <p v-else class="empty">暂无传输任务</p>
+          <div class="dlg-actions">
+            <button class="btn primary" @click="transferShow = false">关闭</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- ================= 首次使用引导 ================= -->
+    <transition name="dialog">
+      <div v-if="onboardShow" class="overlay">
+        <div class="dialog">
+          <h3 v-if="onboardStep === 1">欢迎使用 LanTool</h3>
+          <h3 v-else-if="onboardStep === 2">如何配对</h3>
+          <h3 v-else>信任体系</h3>
+          <div v-if="onboardStep === 1">
+            <p>局域网 P2P 多功能工具：免登录、免服务器，一次配对永久信任。</p>
+            <p class="sub">顶部可修改本机名称；本机永久 ID 终身不变，用于身份识别。</p>
+          </div>
+          <div v-else-if="onboardStep === 2">
+            <p>三种配对方式：</p>
+            <p class="sub">① 扫码：本机生成二维码，对方用系统相机扫描即可自动应答；</p>
+            <p class="sub">② 复制粘贴：交换配对码完成连接；</p>
+            <p class="sub">③ 公网中继：同局域网设备自动发现，点击配对。</p>
+          </div>
+          <div v-else>
+            <p>双层信任体系：</p>
+            <p class="sub">连接信任：允许建立连接与文字聊天；</p>
+            <p class="sub">操作信任：传文件、推网页、剪贴板同步需对方授权，可"总是允许"。</p>
+          </div>
+          <div class="dlg-actions">
+            <button class="btn" @click="closeOnboard">跳过</button>
+            <button class="btn primary" @click="onboardNext">{{ onboardStep < 3 ? '下一步' : '开始使用' }}</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- ================= 图片放大预览 ================= -->
+    <transition name="dialog">
+      <div v-if="showImageZoom" class="overlay zoom-overlay" @click.self="showImageZoom = false">
+        <img class="zoom-img" :src="imageZoomUrl" alt="图片预览" @click="showImageZoom = false" />
+        <button class="mini-btn zoom-close" @click="showImageZoom = false">关闭</button>
+      </div>
+    </transition>
+  </script>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
