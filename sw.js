@@ -3,7 +3,7 @@
  * 缓存策略：Cache First + Network Fallback
  * CDN 资源不缓存；更新时跳过等待并提示刷新
  * ========================================== */
-const CACHE_NAME = 'lantoool-v10'
+const CACHE_NAME = 'lantool-final'
 
 const PRECACHE = [
   './',
