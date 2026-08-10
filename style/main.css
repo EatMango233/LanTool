@@ -1,0 +1,1432 @@
+@charset "UTF-8";
+/* ==============================================
+ * 局域网工具 LanTool — Material Design 3 风格
+ * 主题色 primary #6750A4，含完整色板（亮/暗）
+ * 响应式：<480 单列；480~768 居中加宽；>768 加深阴影+hover
+ * ============================================== */
+
+/* ================= MD3 亮色 Token ================= */
+:root {
+  /* 色彩 */
+  --md-primary: #6750A4;
+  --md-on-primary: #FFFFFF;
+  --md-primary-container: #EADDFF;
+  --md-on-primary-container: #21005D;
+
+  --md-secondary: #625B71;
+  --md-on-secondary: #FFFFFF;
+  --md-secondary-container: #E8DEF8;
+  --md-on-secondary-container: #1D192B;
+
+  --md-tertiary: #7D5260;
+  --md-on-tertiary: #FFFFFF;
+  --md-tertiary-container: #FFD8E4;
+
+  --md-error: #B3261E;
+  --md-on-error: #FFFFFF;
+  --md-error-container: #F9DEDC;
+  --md-on-error-container: #410E0B;
+
+  /* 表面色阶 */
+  --md-surface: #FEF7FF;
+  --md-surface-dim: #DED8E1;
+  --md-surface-bright: #FEF7FF;
+  --md-surface-container-lowest: #FFFFFF;
+  --md-surface-container-low: #F7F2FA;
+  --md-surface-container: #F3EDF7;
+  --md-surface-container-high: #ECE6F0;
+  --md-surface-container-highest: #E6E0E9;
+
+  --md-on-surface: #1D1B20;
+  --md-on-surface-variant: #49454F;
+
+  --md-outline: #79747E;
+  --md-outline-variant: #CAC4D0;
+
+  /* 形状 */
+  --md-radius-full: 999px;
+  --md-radius-extra-large: 28px;
+  --md-radius-large: 16px;
+  --md-radius-medium: 12px;
+  --md-radius-small: 8px;
+
+  /* 高度 */
+  --md-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+  --md-elevation-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15);
+  --md-elevation-3: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15);
+
+  /* 动效（mdui / MD3 曲线） */
+  --md-motion-standard: cubic-bezier(0.2, 0, 0, 1);
+  --md-motion-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --md-motion-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --md-motion-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --md-duration-short1: 100ms;
+  --md-duration-short2: 200ms;
+  --md-duration-medium1: 250ms;
+  --md-duration-medium2: 300ms;
+  --md-duration-long: 400ms;
+
+  /* 派生色（业务语义） */
+  --color-online: #4C9C5F;
+  --color-offline: #79747E;
+
+  --color-link: #6750A4;
+  --surface: var(--md-surface);
+  --surface-variant: var(--md-surface-container-high);
+  --on-surface: var(--md-on-surface);
+  --on-surface-variant: var(--md-on-surface-variant);
+  --outline: var(--md-outline);
+  --primary: var(--md-primary);
+  --error: var(--md-error);
+  --success: #2E7D32;
+  --warn: #B3261E;
+  --radius-btn: var(--md-radius-large);
+  --radius-card: var(--md-radius-extra-large);
+}
+
+/* ================= MD3 暗色 Token ================= */
+html[data-dark='1'] {
+  --md-primary: #D0BCFF;
+  --md-on-primary: #381E72;
+  --md-primary-container: #4F378B;
+  --md-on-primary-container: #EADDFF;
+
+  --md-secondary: #CCC2DC;
+  --md-on-secondary: #332D41;
+  --md-secondary-container: #4A4458;
+  --md-on-secondary-container: #E8DEF8;
+
+  --md-tertiary: #EFB8C8;
+  --md-on-tertiary: #492532;
+  --md-tertiary-container: #633B48;
+
+  --md-error: #F2B8B5;
+  --md-on-error: #601410;
+  --md-error-container: #8C1D18;
+  --md-on-error-container: #F9DEDC;
+
+  --md-surface: #141218;
+  --md-surface-dim: #141218;
+  --md-surface-bright: #3B383E;
+  --md-surface-container-lowest: #0F0D13;
+  --md-surface-container-low: #1D1B20;
+  --md-surface-container: #211F26;
+  --md-surface-container-high: #2B2930;
+  --md-surface-container-highest: #36343B;
+
+  --md-on-surface: #E6E0E9;
+  --md-on-surface-variant: #CAC4D0;
+
+  --md-outline: #938F99;
+  --md-outline-variant: #49454F;
+
+  --md-elevation-1: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 3px 1px rgba(0, 0, 0, 0.3);
+  --md-elevation-2: 0 1px 2px rgba(0, 0, 0, 0.5), 0 2px 6px 2px rgba(0, 0, 0, 0.3);
+  --md-elevation-3: 0 1px 3px rgba(0, 0, 0, 0.5), 0 4px 8px 3px rgba(0, 0, 0, 0.3);
+
+  --primary-on-card: var(--md-primary);
+
+  --card-bg: var(--md-surface-container-low);
+  --card-hover-elev: var(--md-elevation-3);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  background: var(--md-surface);
+  color: var(--md-on-surface);
+  line-height: 1.5;
+  font-size: 16px;
+  transition: background 0.2s, color 0.2s;
+}
+
+[v-cloak] {
+  display: none !important;
+}
+
+/* 状态层（MD3 hover/focus 半透明覆盖） */
+.btn,
+.icon-btn,
+.name-btn,
+.action-btn,
+.mini-btn,
+.device-card,
+.hist-list li {
+  position: relative;
+}
+
+.btn::after,
+.icon-btn::after,
+.name-btn::after,
+.action-btn::after,
+.mini-btn::after,
+.device-card::after,
+.hist-list li::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  transition: background 0.15s;
+}
+
+.btn:hover::after,
+.icon-btn:hover::after,
+.name-btn:hover::after,
+.action-btn:hover::after,
+.mini-btn:hover::after,
+.device-card:hover::after,
+.hist-list li:active::after {
+  background: currentColor;
+  opacity: 0.08;
+}
+
+.btn:active::after,
+.icon-btn:active::after,
+.name-btn:active::after,
+.action-btn:active::after,
+.mini-btn:active::after,
+.device-card:active::after {
+  background: currentColor;
+  opacity: 0.12;
+}
+
+/* ============================================================
+   Ripple 波纹（mdui 风格，覆盖在状态层之上）
+   ============================================================ */
+.lt-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.12;
+  pointer-events: none;
+  transform: scale(0.4);
+  animation: lt-ripple-in var(--md-duration-medium2) var(--md-motion-standard) forwards;
+}
+
+.lt-ripple-out {
+  animation: lt-ripple-out var(--md-duration-short2) var(--md-motion-emphasized-accelerate) forwards;
+}
+
+@keyframes lt-ripple-in {
+  from {
+    transform: scale(0.4);
+    opacity: 0.12;
+  }
+  to {
+    transform: scale(1);
+    opacity: 0.1;
+  }
+}
+
+@keyframes lt-ripple-out {
+  from {
+    opacity: 0.1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* ============================================================
+   Motion（mdui 入场/切换动效）
+   ============================================================ */
+/* 卡片入场：轻微上浮淡入 */
+.card {
+  animation: lt-card-in var(--md-duration-medium1) var(--md-motion-emphasized-decelerate) both;
+}
+
+@keyframes lt-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 设备卡逐个入场 */
+.device-card {
+  animation: lt-slot-in var(--md-duration-medium1) var(--md-motion-emphasized-decelerate) both;
+}
+
+.device-card:nth-child(1) { animation-delay: 20ms; }
+.device-card:nth-child(2) { animation-delay: 40ms; }
+.device-card:nth-child(3) { animation-delay: 60ms; }
+.device-card:nth-child(4) { animation-delay: 80ms; }
+.device-card:nth-child(5) { animation-delay: 100ms; }
+.device-card:nth-child(6) { animation-delay: 120ms; }
+
+@keyframes lt-slot-in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 会话区切换时的过渡 */
+.session-card {
+  animation: lt-slot-in var(--md-duration-medium1) var(--md-motion-emphasized-decelerate) both;
+}
+
+/* 消息气泡入场 */
+.msg {
+  animation: lt-msg-in var(--md-duration-short2) var(--md-motion-emphasized-decelerate) both;
+}
+
+@keyframes lt-msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 底部操作栏入场：上滑 */
+.action-bar {
+  animation: lt-bar-in var(--md-duration-medium2) var(--md-motion-emphasized-decelerate) both;
+}
+
+@keyframes lt-bar-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 16px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* ============================================================
+   弹窗过渡（Vue <Transition name="dialog">）
+   ============================================================ */
+.dialog-enter-active {
+  transition: opacity var(--md-duration-short2) linear,
+    transform var(--md-duration-medium1) var(--md-motion-emphasized-decelerate);
+}
+
+.dialog-leave-active {
+  transition: opacity var(--md-duration-short2) linear,
+    transform var(--md-duration-medium1) var(--md-motion-emphasized-accelerate);
+}
+
+.dialog-enter-from,
+.dialog-leave-to {
+  opacity: 0;
+  transform: scale(0.9) translateY(16px);
+}
+
+.dialog-leave-to {
+  transform: scale(0.92) translateY(8px);
+}
+
+/* 主题切换时的整体淡入（避免生硬） */
+html[data-dark='1'] body,
+html[data-dark='0'] body {
+  transition: background var(--md-duration-medium1) linear, color var(--md-duration-medium1) linear;
+}
+
+/* ---------- 中心容器（顶层，背景用 surface） ---------- */
+.app {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 16px calc(120px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 100vh;
+}
+
+/* ============================================================
+ * 顶部 AppBar（MD3 top app bar）
+ * ============================================================ */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 4px 8px;
+  margin-bottom: 4px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: linear-gradient(var(--md-surface) 85%, transparent);
+}
+
+.brand {
+  font-size: 1.35rem;
+  font-weight: 500;
+  flex: 1;
+  color: var(--md-on-surface);
+  letter-spacing: 0.25px;
+}
+
+.name-btn {
+  background: transparent;
+  color: var(--md-on-surface-variant);
+  border: none;
+  border-radius: var(--md-radius-small);
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  min-height: 44px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.icon-btn,
+.mini-btn {
+  border: none;
+  background: transparent;
+  color: var(--md-on-surface-variant);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--md-radius-full);
+  min-width: 40px;
+  min-height: 40px;
+  font-size: 1rem;
+}
+
+.mini-btn {
+  min-width: 36px;
+  min-height: 36px;
+  font-size: 0.8rem;
+}
+
+/* ============================================================
+   卡片（MD3 elevated / tonal surface）
+   ============================================================ */
+.card {
+  background: var(--md-surface-container-low);
+  border-radius: var(--md-radius-large);
+  padding: 16px;
+  box-shadow: var(--md-elevation-1);
+  border: 1px solid var(--md-outline-variant);
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.card-head h2,
+.session-head h2 {
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+}
+
+/* ============================================================
+   Button（MD3----------------------------------------------
+   ============================================================ */
+.btn {
+  border: none;
+  border-radius: var(--md-radius-large);
+  padding: 10px 18px;
+  min-height: 40px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: box-shadow var(--md-duration-short2) var(--md-motion-standard),
+    background-color var(--md-duration-short2) var(--md-motion-standard),
+    transform var(--md-duration-short1) var(--md-motion-standard);
+}
+
+.btn:not(:disabled):hover {
+  box-shadow: var(--md-elevation-1);
+}
+
+.btn:not(:disabled):active {
+  transform: scale(0.96);
+}
+
+.btn:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
+/* filled button 主题色 */
+.btn.primary {
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+  box-shadow: var(--md-elevation-1);
+}
+
+/* tonal button 主题容器色 */
+.btn {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+}
+
+.btn.md2 {
+  padding: 6px 14px;
+  min-height: 36px;
+  font-size: 0.85rem;
+}
+
+.send-btn {
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   身份区（原令牌区改造：无临时令牌，展示本机身份 + 配对入口）
+   ============================================================ */
+.token-card {
+  text-align: center;
+  padding: 20px 16px;
+}
+
+.identity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.identity-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.my-perm {
+  font-family: 'Roboto Mono', 'SF Mono', Consolas, monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--md-on-surface);
+  letter-spacing: 0.03em;
+}
+
+.badge {
+  font-size: 0.75rem;
+  border-radius: var(--md-radius-small);
+  padding: 2px 10px;
+  font-weight: 500;
+  letter-spacing: 0.15px;
+}
+
+.badge-ok {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+}
+
+.badge-warn {
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface-variant);
+}
+
+.pair-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.lan-ip {
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: var(--md-on-surface-variant);
+  font-family: var(--md-font-code, monospace);
+  word-break: break-all;
+}
+
+.pair-input {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1.4rem;
+  letter-spacing: 0.4em;
+  text-align: center;
+  text-transform: uppercase;
+  width: min(220px, 80%);
+  min-height: 48px;
+  padding: 8px 12px;
+  border-radius: var(--md-radius-small);
+  border: 1px solid var(--md-outline);
+  background: transparent;
+  color: var(--md-on-surface);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.pair-input:focus {
+  border-color: var(--md-primary);
+}
+
+/* 公网中继状态行 */
+.relay-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: var(--md-on-surface-variant);
+}
+
+/* ============================================================
+   设备列表
+   ============================================================ */
+.device-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.device-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--md-radius-medium);
+  background: var(--md-surface-container-low);
+  min-height: 48px;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s, box-shadow 0.2s;
+}
+
+.device-card.active {
+  background: var(--md-secondary-container);
+}
+
+.device-card:active {
+  transform: scale(0.99);
+}
+
+.dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--color-offline);
+  flex-shrink: 0;
+}
+
+.dot.dot-on {
+  background: #4FB573;
+  box-shadow: 0 0 6px rgba(76, 156, 95, 0.6);
+}
+
+.dev-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.dev-name {
+  display: block;
+  font-weight: 500;
+  font-size: 0.98rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dev-sub {
+  font-size: 0.78rem;
+  color: var(--md-on-surface-variant);
+}
+
+.dev-tags {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.tag {
+  font-size: 0.7rem;
+  border-radius: var(--md-radius-small);
+  padding: 2px 8px;
+  background: var(--md-surface-container);
+  color: var(--md-on-surface-variant);
+  border: 1px solid var(--md-outline-variant);
+  font-weight: 500;
+}
+
+.tag-on {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+  border-color: transparent;
+}
+
+.tag-warn {
+  background: var(--md-error-container);
+  color: var(--md-on-error-container);
+  border-color: transparent;
+}
+
+.rtt {
+  font-size: 0.75rem;
+  color: var(--md-on-surface-variant);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 公网中继发现的新设备分组 */
+.sub-head {
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.hint.inline {
+  padding: 0;
+  font-size: 0.72rem;
+  font-weight: normal;
+}
+
+.discovered-card {
+  cursor: default;
+}
+
+.discovered-card .btn {
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: var(--md-on-surface-variant);
+  text-align: center;
+  padding: 8px 0;
+}
+
+.empty {
+  text-align: center;
+  color: var(--md-on-surface-variant);
+  padding: 24px 0;
+  font-size: 0.9rem;
+}
+
+.empty .sub {
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+/* ============================================================
+   会话区
+   ============================================================ */
+.session-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.session-ops {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   聊天
+   ============================================================ */
+.chat-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+}
+
+.chatbox {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 45vh;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.msg {
+  display: flex;
+  flex-direction: column;
+  max-width: 80%;
+}
+
+.msg-send {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.msg-recv {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.msg-bubble {
+  padding: 10px 14px;
+  border-radius: var(--md-radius-large);
+  font-size: 0.92rem;
+  word-break: break-word;
+  background: var(--md-surface-container-high);
+}
+
+/* 接收气泡：tonal  发送气泡：primary */
+.msg-send .msg-bubble {
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+  border-bottom-right-radius: var(--md-radius-small);
+}
+
+.msg-recv .msg-bubble {
+  border-bottom-left-radius: var(--md-radius-small);
+}
+
+.msg-time {
+  font-size: 0.7rem;
+  color: var(--md-on-surface-variant);
+  margin-top: 2px;
+}
+
+.progress-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.82rem;
+}
+
+.bar {
+  width: 180px;
+  height: 6px;
+  background: var(--md-surface-container-highest);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  background: var(--md-primary);
+  border-radius: 999px;
+  transition: width 0.2s;
+}
+
+/* ============================================================
+   输入
+   ============================================================ */
+.input-card {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.chat-input {
+  flex: 1;
+  resize: none;
+  border: 1px solid var(--md-outline);
+  background: transparent;
+  color: var(--md-on-surface);
+  border-radius: var(--md-radius-medium);
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  min-height: 48px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.chat-input:focus {
+  border-color: var(--md-primary);
+}
+
+/* ============================================================
+   底部导航（MD3 Bottom App Bar）
+   ============================================================ */
+.action-bar {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  width: min(600px, calc(100% - 24px));
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: space-around;
+  background: var(--md-surface-container);
+  border: 1px solid var(--md-outline-variant);
+  border-radius: var(--md-radius-large);
+  padding: 6px 8px;
+  box-shadow: var(--md-elevation-3);
+  z-index: 50;
+}
+
+.action-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  border: none;
+  background: transparent;
+  color: var(--md-on-surface-variant);
+  font-size: 0.72rem;
+  font-family: inherit;
+  min-height: 52px;
+  border-radius: var(--md-radius-medium);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.action-btn:disabled {
+  opacity: 0.38;
+}
+
+.action-btn:hover {
+  color: var(--md-on-surface);
+}
+
+.act-ico {
+  font-size: 1.3rem;
+  line-height: 1.2;
+}
+
+/* ============================================================
+   MD3 图标字体（Material Symbols Rounded）
+   ============================================================ */
+.msi {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 1.2em;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  vertical-align: middle;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.msi-sm {
+  font-size: 1em;
+  margin-right: 2px;
+}
+
+.theme-ico {
+  font-size: 1.3rem;
+}
+
+/* ============================================================
+   状态栏
+   ============================================================ */
+.status-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  font-size: 0.7rem;
+  color: var(--md-on-surface-variant);
+  background: var(--md-surface);
+  z-index: 40;
+}
+
+.sp {
+  flex: 1;
+}
+
+/* ============================================================
+   弹窗（MD3 dialog）
+   ============================================================ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(32, 26, 30, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 200;
+  backdrop-filter: blur(2px);
+}
+
+.dialog {
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface);
+  border-radius: var(--md-radius-extra-large);
+  padding: 24px;
+  width: min(92vw, 400px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--md-elevation-3);
+}
+
+.dialog.wide {
+  width: min(94vw, 560px);
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.dialog h3 {
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+/* 手动配对弹窗 */
+.wide-dialog {
+  width: min(94vw, 560px);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.manual-step {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 16px;
+  background: var(--md-surface-container);
+}
+
+.manual-label {
+  font-size: 0.85rem;
+  color: var(--md-on-surface-variant);
+}
+
+.manual-code {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--md-outline);
+  background: var(--md-surface-container-lowest);
+  color: var(--md-on-surface);
+  font-family: var(--md-font-code, monospace);
+  font-size: 0.72rem;
+  resize: vertical;
+  min-height: 64px;
+  word-break: break-all;
+}
+
+/* 扫码配对二维码 */
+.qr-box {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+}
+.qr-box img,
+.qr-box canvas {
+  border-radius: 12px;
+  background: #fff;
+}
+
+/* 扫码弹窗 */
+.scan-dialog {
+  text-align: center;
+}
+.qr-video {
+  width: 100%;
+  max-width: 320px;
+  border-radius: 16px;
+  margin: 8px auto;
+  background: #000;
+}
+.qr-canvas {
+  display: none;
+}
+
+.manual-pair-btn {
+  width: 100%;
+}
+
+.dialog .url {
+  word-break: break-all;
+  font-size: 0.85rem;
+  color: var(--md-primary);
+}
+
+.dlg-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.chk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* ============================================================
+   历史
+   ============================================================ */
+.hist-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.hist-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px;
+  border-radius: var(--md-radius-medium);
+  background: var(--md-surface-container);
+}
+
+/* ============================================================
+   iframe 内嵌视图
+   ============================================================ */
+.iframe-overlay {
+  padding: 0;
+  align-items: flex-end;
+}
+
+.iframe-frame {
+  width: 100%;
+  height: 92vh;
+  background: var(--md-surface);
+  border-radius: var(--md-radius-large) var(--md-radius-large) 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--md-elevation-3);
+}
+
+.iframe-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--md-surface-container-high);
+}
+
+.iframe-bar .url {
+  font-size: 0.8rem;
+  color: var(--md-on-surface-variant);
+  word-break: break-all;
+  flex: 1;
+  min-width: 0;
+}
+
+.iframe-body {
+  flex: 1;
+  border: none;
+  background: #fff;
+}
+
+/* ============================================================
+   Toast
+   ============================================================ */
+#lt-toast-wrap {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.lt-toast {
+  background: #1D1B20;
+  color: #E6E0E9;
+  font-size: 0.88rem;
+  font-family: inherit;
+  padding: 12px 20px;
+  border-radius: var(--md-radius-large);
+  box-shadow: var(--md-elevation-3);
+  animation: toast-in 0.25s ease;
+  max-width: 82vw;
+  text-align: center;
+}
+
+.lt-toast.success {
+  background: #2E7D32;
+  color: #fff;
+}
+
+.lt-toast.error {
+  background: var(--md-error);
+  color: var(--md-on-error);
+}
+
+.lt-toast.warn {
+  background: #8C5C00;
+  color: #fff;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ============================================================
+   新功能样式：未读角标 / 图片与语音气泡 / 语音消息 / 传输队列 /
+   设置面板 / 图片放大 / 引导页 / 导航角标
+   ============================================================ */
+/* 未读角标（设备卡 + 导航） */
+.unread-badge {
+  display: inline-block;
+  min-width: 18px;
+  height: 18px;
+  line-height: 18px;
+  border-radius: 999px;
+  background: var(--md-error);
+  color: var(--md-on-error);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0 5px;
+  margin-left: 6px;
+  vertical-align: 2px;
+}
+
+.nav-badge {
+  position: absolute;
+  top: 2px;
+  right: 10%;
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
+  border-radius: 999px;
+  background: var(--md-error);
+  color: var(--md-on-error);
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0 4px;
+}
+
+/* 聊天图片 / 语音气泡 */
+.msg-img {
+  display: block;
+  max-width: 220px;
+  max-height: 220px;
+  border-radius: var(--md-radius-medium);
+  cursor: pointer;
+}
+
+.msg-audio {
+  display: block;
+  width: 220px;
+  max-width: 60vw;
+  height: 40px;
+}
+
+.msg-file-meta {
+  font-size: 0.72rem;
+  opacity: 0.85;
+  margin-top: 4px;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 语音消息录音按钮 */
+.voice-rec-btn {
+  flex-shrink: 0;
+}
+
+.voice-rec-btn.rec-on {
+  background: var(--md-error);
+  color: var(--md-on-error);
+  font-variant-numeric: tabular-nums;
+  animation: rec-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes rec-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(179, 38, 30, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(179, 38, 30, 0);
+  }
+}
+
+/* 传输队列 */
+.qlist {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.qitem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border-radius: var(--md-radius-medium);
+  background: var(--md-surface-container);
+}
+
+.qitem-fail {
+  background: var(--md-error-container);
+}
+
+.qhead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qname {
+  flex: 1;
+  font-size: 0.88rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qsub {
+  font-size: 0.74rem;
+  color: var(--md-on-surface-variant);
+}
+
+/* 设置面板 */
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--md-outline-variant);
+}
+
+.setting-group:last-child {
+  border-bottom: none;
+}
+
+.setting-label {
+  font-size: 0.8rem;
+  color: var(--md-on-surface-variant);
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* 图片放大预览 */
+.zoom-overlay {
+  background: rgba(0, 0, 0, 0.85);
+  flex-direction: column;
+  gap: 12px;
+}
+
+.zoom-img {
+  max-width: 92vw;
+  max-height: 82vh;
+  border-radius: var(--md-radius-medium);
+  box-shadow: var(--md-elevation-3);
+}
+
+.zoom-close {
+  background: var(--md-surface-container);
+  color: var(--md-on-surface);
+}
+
+/* ============================================================
+   自适应
+   ============================================================ */
+@media (min-width: 480px) {
+  .chatbox {
+    max-height: 50vh;
+  }
+}
+
+@media (min-width: 768px) {
+  body {
+    background: var(--md-surface-container);
+  }
+
+  .app {
+    margin-top: 24px;
+    margin-bottom: 24px;
+    padding: 20px 24px;
+    background: var(--md-surface-bright);
+    border-radius: var(--md-radius-extra-large);
+    box-shadow: var(--md-elevation-2);
+  }
+
+  .card:hover {
+    box-shadow: var(--md-elevation-2);
+  }
+
+  .device-card:hover {
+    box-shadow: var(--md-elevation-1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .card,
+  .device-card,
+  .msg,
+  .action-bar,
+  .dialog {
+    animation: none !important;
+  }
+}
